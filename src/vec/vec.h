@@ -4,9 +4,9 @@
  * @brief Simple vector implementation
  * @version 0.1
  * @date 2023-10-22
- * 
+ *
  * @copyright Copyright (c) 2023 ezeire
- * 
+ *
  */
 
 #pragma once
@@ -40,9 +40,21 @@ typedef struct vec const *vec;
  * @var ivec_item::destroy A function pointer to destroy the item.
  */
 struct ivec_item {
-  mut_usize item_size;
+  mut_usz item_size;
   void (*print)(vec_item item);
   void (*destroy)(vec_item item);
+};
+
+typedef struct ivec_item const vec_interface;
+
+/**
+ * @struct _svec_mdi_
+ * @brief Structure to hold metadata information for a vector.
+ */
+struct svec_mdi {
+  mut_usz length;    /**< Length of the vector. */
+  mut_usz alloc;     /**< Allocated memory for the vector. */
+  mut_usz type_size; /**< Size of each element in the vector. */
 };
 
 // allocation functions
@@ -68,9 +80,10 @@ void vec_destroy(void *self);
  * @param self The vector.
  * @param first_index The index of the first element in the slice.
  * @param second_index The index of the last element in the slice.
- * @return Returns a new vector containing the slice, or NULL if the indices are invalid.
+ * @return Returns a new vector containing the slice, or NULL if the indices are
+ * invalid.
  */
-mut_vec vec_slice(vec self, usize first_index, usize second_index);
+mut_vec vec_slice(vec self, usz first_index, usz second_index);
 
 /**
  * @brief Creates a copy of a vector.
@@ -97,7 +110,8 @@ vec vec_map(vec self, void (*apply)(vec_item item));
  * @param apply The function to apply to each pair of items.
  * @return A new vector with the applied function.
  */
-vec vec_map2(vec self, vec other, void (*apply)(vec_item item_a, vec_item item_b));
+vec vec_map2(vec self, vec other,
+             void (*apply)(vec_item item_a, vec_item item_b));
 
 // information functions
 
@@ -110,12 +124,12 @@ vec vec_map2(vec self, vec other, void (*apply)(vec_item item_a, vec_item item_b
 bool vec_empty(vec self);
 
 /**
- * @brief Get the size of the vector.
+ * @brief Get the length of the vector.
  *
- * @param self The vector to get the size of.
- * @return The size of the vector.
+ * @param self The vector to get the length of.
+ * @return The length of the vector.
  */
-usize vec_size(vec self);
+mut_usz vec_length(vec self);
 
 /**
  * @brief Print the elements of the vector.
@@ -148,7 +162,8 @@ void vec_foreach(vec self, void (*apply)(vec_item item));
  * @param other The second vector.
  * @param apply The function to apply to each pair of elements.
  */
-void vec_foreach2(vec self, vec other, void (*apply)(vec_item item_a, vec_item item_b));
+void vec_foreach2(vec self, vec other,
+                  void (*apply)(vec_item item_a, vec_item item_b));
 
 /**
  * @brief Removes the last element from the vector.
@@ -166,17 +181,18 @@ bool vec_pop(mut_vec self);
  * @param item The new value for the element.
  * @return True if the element was successfully set, false otherwise.
  */
-bool vec_set(mut_vec self, usize index, vec_item item);
+bool vec_set(mut_vec self, usz index, vec_item item);
 
 /**
- * @brief Modifies an element at a specific index in the vector using a function.
+ * @brief Modifies an element at a specific index in the vector using a
+ * function.
  *
  * @param self The vector.
  * @param index The index of the element to modify.
  * @param apply The function to apply to the element.
  * @return True if the element was successfully modified, false otherwise.
  */
-bool vec_modify(mut_vec self, usize index, void (*apply)(vec_item item));
+bool vec_modify(mut_vec self, usz index, void (*apply)(vec_item item));
 
 /**
  * @brief Adds an element to the end of the vector.
@@ -186,3 +202,92 @@ bool vec_modify(mut_vec self, usize index, void (*apply)(vec_item item));
  * @return True if the element was successfully added, false otherwise.
  */
 bool vec_push(mut_vec self, vec_item item);
+
+/**
+ * @brief Initializes an svec data structure.
+ *
+ * This function initializes an svec data structure with the specified size.
+ *
+ * @param size The size of each element in the svec.
+ * @return A pointer to the initialized svec data structure.
+ */
+void *in_svec_init(usz size);
+
+/**
+ * @brief Pushes a value into a dynamic array.
+ *
+ * This function pushes a value into a dynamic array represented by the
+ * `svec_ptr` pointer. If there is enough space in the array, the value is
+ * copied into the array. Otherwise, the array is reallocated to double its size
+ * and the value is copied into the new space.
+ *
+ * @param svec_ptr A pointer to the dynamic array.
+ * @param value The value to be pushed into the array.
+ */
+void in_svec_push(void *svec_ptr, void *value);
+
+/**
+ * @brief Macro for initializing an svec data structure.
+ *
+ * This macro is a convenient way to initialize an svec data structure with the
+ * specified type.
+ *
+ * @param TYPE The type of each element in the svec.
+ * @return A pointer to the initialized svec data structure.
+ */
+#define svec_init(TYPE) in_svec_init(sizeof(TYPE))
+
+/**
+ * @brief Pushes a value onto the vector.
+ *
+ * @param SVEC_PTR The pointer to the vector.
+ * @param VALUE The value to push onto the vector.
+ */
+#define svec_push(SVEC_PTR, VALUE)                                             \
+  do {                                                                         \
+    void *temp_ptr = (void *)(VALUE);                                          \
+    in_svec_push((SVEC_PTR), &temp_ptr);                                       \
+  } while (0)
+
+/**
+ * @brief Pops a value from the vector.
+ *
+ * @param SVEC_PTR The pointer to the vector.
+ */
+#define svec_pop(SVEC_PTR)                                                     \
+  do {                                                                         \
+    struct svec_mdi *data = (void *)(SVEC_PTR);                                \
+    if (data->length == 0) {                                                   \
+      break;                                                                   \
+    }                                                                          \
+    data->length -= 1;                                                         \
+  } while (0)
+
+/**
+ * @brief Returns the length of the vector.
+ *
+ * @param SVEC_PTR The pointer to the vector.
+ * @return The length of the vector.
+ */
+#define svec_length(SVEC_PTR) ((struct svec_mdi *)(void *)(SVEC_PTR))->length
+
+/**
+ * @brief Check if the given svec is empty.
+ *
+ * @param SVEC_PTR Pointer to the svec structure.
+ * @return true if the svec is empty, false otherwise.
+ */
+#define svec_empty(SVEC_PTR) ((struct svec_mdi *)(SVEC_PTR))->length == 0
+
+/**
+ * @brief Returns the value at the specified index in the vector.
+ *
+ * @param SVEC_PTR The pointer to the vector.
+ * @param INDEX The index of the value to retrieve.
+ * @return The value at the specified index.
+ */
+#define svec_at(SVEC_PTR, INDEX)                                               \
+  ((char *)(SVEC_PTR) +                                                        \
+   sizeof(                                                                     \
+       struct svec_mdi))[(INDEX) *                                             \
+                         ((struct svec_mdi *)(void *)(SVEC_PTR))->type_size]

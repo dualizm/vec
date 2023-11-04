@@ -3,10 +3,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void print_i32(void *item) { printf("%" PRIi32 " ", *(int32_t *)item); }
-
-void strange_modify_i32(void *item) {
+void print_i32(vec_item item) {
   mut_i32 *v = item;
+
+  printf("%" PRIi32 " ", *v); 
+}
+
+void strange_modify_i32(vec_item item) {
+  mut_i32 *v = item;
+
   *v += 42;
 }
 
@@ -24,15 +29,14 @@ void vec_columns_sub_i32(vec_item item_a, vec_item item_b) {
   *v1 -= *v2;
 }
 
+vec_interface vec_i32_interface = {
+    .item_size = sizeof(mut_i32), .destroy = free, .print = print_i32};
 
 int main(void) {
-  struct ivec_item vec_i32_interface = {
-      .item_size = sizeof(mut_i32), .destroy = free, .print = print_i32};
-
   mut_vec v1 = vec_init(vec_i32_interface);
-  for(mut_usize i = 0; i < 8; ++i) {
+  for (mut_usz i = 0; i < 8; ++i) {
     mut_i32 *e = malloc(sizeof *e);
-    if(e) {
+    if (e) {
       *e = rand() % 43 + 23;
       vec_push(v1, e);
     }

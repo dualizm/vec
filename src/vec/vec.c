@@ -13,9 +13,9 @@
  */
 struct vec {
   struct ivec_item interface; /**< Interface for working with vector elements */
-  mut_usize length; /**< The current length of the vector. */
-  mut_usize alloc; /**< The current allocated size of the vector. */
-  void **elements; /**< The array of elements. */
+  mut_usz length;             /**< The current length of the vector. */
+  mut_usz alloc;              /**< The current allocated size of the vector. */
+  void **elements;            /**< The array of elements. */
 };
 
 /**
@@ -35,7 +35,7 @@ static bool is_space(vec self) { return self->alloc != self->length; }
 static bool resize(mut_vec self) {
   assert(self);
 
-  usize new_size = sizeof *self->elements * self->alloc * (self->length / 2);
+  usz new_size = sizeof *self->elements * self->alloc * (self->length / 2);
   void **new_elements = realloc(self->elements, new_size);
   if (!new_elements) {
     return false;
@@ -73,14 +73,14 @@ void vec_destroy(void *self) {
   free(v);
 }
 
-mut_vec vec_slice(vec self, usize first_index, usize second_index) {
+mut_vec vec_slice(vec self, usz first_index, usz second_index) {
   if (first_index >= self->length || second_index > self->length ||
       first_index >= second_index) {
     return NULL;
   }
 
   mut_vec slice = vec_init(self->interface);
-  for (mut_usize i = first_index; i < second_index; ++i) {
+  for (mut_usz i = first_index; i < second_index; ++i) {
     vec_item new_item = malloc(self->interface.item_size);
     if (new_item) {
       memcpy(new_item, self->elements[i], self->interface.item_size);
@@ -99,7 +99,8 @@ vec vec_map(vec self, void (*apply)(vec_item item)) {
   return new_vec;
 }
 
-vec vec_map2(vec self, vec other, void (*apply)(vec_item item_a, vec_item item_b)) {
+vec vec_map2(vec self, vec other,
+             void (*apply)(vec_item item_a, vec_item item_b)) {
   mut_vec new_vec = vec_copy(self);
   vec_foreach2(new_vec, other, apply);
   return new_vec;
@@ -108,7 +109,7 @@ vec vec_map2(vec self, vec other, void (*apply)(vec_item item_a, vec_item item_b
 // information functions
 bool vec_empty(vec self) { return self->length == 0; }
 
-usize vec_size(vec self) { return self->length; }
+mut_usz vec_length(vec self) { return self->length; }
 
 void vec_print(vec self) { vec_foreach(self, self->interface.print); }
 
@@ -122,8 +123,8 @@ void vec_foreach(vec self, void (*apply)(vec_item item)) {
   assert(self);
 
   if (apply) {
-    usize len = self->length;
-    for (mut_usize i = 0; i < len; ++i) {
+    usz len = self->length;
+    for (mut_usz i = 0; i < len; ++i) {
       apply(self->elements[i]);
     }
   }
@@ -135,8 +136,8 @@ void vec_foreach2(vec self, vec other,
   assert(self->length == other->length);
 
   if (apply) {
-    usize len = self->length;
-    for (mut_usize i = 0; i < len; ++i) {
+    usz len = self->length;
+    for (mut_usz i = 0; i < len; ++i) {
       apply(self->elements[i], other->elements[i]);
     }
   }
@@ -153,7 +154,7 @@ bool vec_pop(mut_vec self) {
   return true;
 }
 
-bool vec_set(mut_vec self, usize index, vec_item item) {
+bool vec_set(mut_vec self, usz index, vec_item item) {
   assert(self);
 
   if (index >= self->length || !item) {
@@ -165,7 +166,7 @@ bool vec_set(mut_vec self, usize index, vec_item item) {
   return true;
 }
 
-bool vec_modify(mut_vec self, usize index, void (*apply)(vec_item item)) {
+bool vec_modify(mut_vec self, usz index, void (*apply)(vec_item item)) {
   assert(self);
 
   if (index >= self->length) {
@@ -190,4 +191,30 @@ bool vec_push(mut_vec self, vec_item item) {
     }
   }
   return true;
+}
+
+void *in_svec_init(usz size) {
+  struct svec_mdi *data =
+      malloc(size * _VEC_INITIAL_ALLOC_SIZE_ + sizeof(struct svec_mdi));
+  data->length = 0;
+  data->alloc = _VEC_INITIAL_ALLOC_SIZE_;
+  data->type_size = size;
+  return data;
+}
+
+void in_svec_push(void *svec_ptr, void *value) {
+  struct svec_mdi *data = svec_ptr;
+
+  if ((data->alloc - data->length) > 0) {
+    memcpy((char*)(data + 1) + data->length * data->type_size, value, data->type_size);
+    data->length += 1;
+  } else {
+    void *new_data = realloc(svec_ptr, data->type_size * data->alloc * 2 +
+                                           sizeof(struct svec_mdi));
+
+    data = new_data;
+    data->alloc *= 2;
+    data->length += 1;
+    svec_ptr = (void *)data;
+  }
 }

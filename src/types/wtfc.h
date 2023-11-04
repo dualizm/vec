@@ -2,7 +2,7 @@
  * @file wtfc.h
  * @author ezeire (ognieff@yandex.ru)
  * @brief Wrapping types for C
- * @version 1.0
+ * @version 1.2
  * @date 2023-10-14
  * 
  */
@@ -14,6 +14,7 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <uchar.h>
+#include <float.h>
 
 /* 
   new type aliases
@@ -22,6 +23,18 @@
 /*
   immutable types
 */
+
+/* any size types */
+typedef short const any_short;
+typedef int const any_int;
+typedef long const any_long;
+typedef long long const any_llong;
+
+/* any unsigned size types */
+typedef unsigned short const any_ushort;
+typedef unsigned int const any_uint;
+typedef unsigned long const any_ulong;
+typedef unsigned long long const any_ullong;
 
 /* uint */
 typedef uint8_t const u8;
@@ -58,8 +71,8 @@ typedef uint_least16_t const ul16;
 typedef uint_least32_t const ul32;
 typedef uint_least64_t const ul64;
 
-/* unsigned integer type */
-typedef size_t const usize;
+/* size_t */
+typedef size_t const usz;
 
 /* ptr */
 typedef uintptr_t const uptr;
@@ -81,6 +94,18 @@ typedef ch32* str32;
 /*
   mutable types
 */
+
+/* n size types */
+typedef short mut_any_short;
+typedef int mut_any_int;
+typedef long mut_any_long;
+typedef long long mut_any_llong;
+
+/* n unsigned size types */
+typedef unsigned short mut_any_ushort;
+typedef unsigned int mut_any_uint;
+typedef unsigned long mut_any_ulong;
+typedef unsigned long long mut_any_ullong;
 
 /* uint */
 typedef uint8_t mut_u8;
@@ -117,8 +142,8 @@ typedef uint_least16_t mut_ul16;
 typedef uint_least32_t mut_ul32;
 typedef uint_least64_t mut_ul64;
 
-/* unsigned integer type */
-typedef size_t mut_usize;
+/* size_t */
+typedef size_t mut_usz;
 
 /* ptr */
 typedef uintptr_t mut_uptr;
@@ -151,9 +176,9 @@ typedef mut_ch32* mut_str32;
 #define I32_MAX INT32_MAX
 #define I64_MAX INT64_MAX
 
-#define F32_MAX __FLT_MAX__
-#define F64_MAX __DBL_MAX__
-#define F128_MAX __LDBL_MAX__
+#define F32_MAX FLT_MAX
+#define F64_MAX DBL_MAX
+#define F128_MAX LDBL_MAX
 
 #define UF8_MAX UINT_FAST8_MAX
 #define UF16_MAX UINT_FAST16_MAX
@@ -168,7 +193,7 @@ typedef mut_ch32* mut_str32;
 #define UPTR_MAX UINTPTR_MAX
 #define IPTR_MAX INTPTR_MAX
 
-#define USIZE_MAX SIZE_MAX
+#define USZ_MAX SIZE_MAX
 #define DPTR_MAX PTRDIFF_MAX
 
 /* 
@@ -185,9 +210,9 @@ typedef mut_ch32* mut_str32;
 #define I32_MIN INT32_MIN
 #define I64_MIN INT64_MIN
 
-#define F32_MIN __FLT_MIN__
-#define F64_MIN __DBL_MIN__
-#define F128_MIN __LDBL_MIN__
+#define F32_MIN FLT_MIN
+#define F64_MIN DBL_MIN
+#define F128_MIN LDBL_MIN
 
 #define UF8_MIN UINT_FAST8_MIN
 #define UF16_MIN UINT_FAST16_MIN
@@ -202,12 +227,13 @@ typedef mut_ch32* mut_str32;
 #define UPTR_MIN UINTPTR_MIN
 #define IPTR_MIN INTPTR_MIN
 
-#define USIZE_MIN SIZE_MIN
+#define USZ_MIN SIZE_MIN
 #define DPTR_MIN PTRDIFF_MIN
 
 /* 
   new width limits 
 */
+
 #define U8_WIDTH UINT8_WIDTH
 #define U16_WIDTH UINT16_WIDTH
 #define U32_WIDTH UINT32_WIDTH
@@ -218,9 +244,9 @@ typedef mut_ch32* mut_str32;
 #define I32_WIDTH INT32_WIDTH
 #define I64_WIDTH INT64_WIDTH
 
-#define F32_WIDTH __FLT_WIDTH__
-#define F64_WIDTH __DBL_WIDTH__
-#define F128_WIDTH __LDBL_WIDTH__
+#define F32_WIDTH FLT_WIDTH
+#define F64_WIDTH DBL_WIDTH
+#define F128_WIDTH LDBL_WIDTH
 
 #define UF8_WIDTH UINT_FAST8_WIDTH
 #define UF16_WIDTH UINT_FAST16_WIDTH
@@ -235,6 +261,37 @@ typedef mut_ch32* mut_str32;
 #define UPTR_WIDTH UINTPTR_WIDTH
 #define IPTR_WIDTH INTPTR_WIDTH
 
-#define USIZE_WIDTH SIZE_WIDTH
+#define USZ_WIDTH SIZE_WIDTH
 #define DPTR_WIDTH PTRDIFF_WIDTH
 
+/*
+  new floats info
+*/
+
+#define F32_MANT_DIG FLT_MANT_DIG
+#define F64_MANT_DIG DBL_MANT_DIG
+#define F128_MANT_DIG LDBL_MANT_DIG
+
+#define F32_DIG FLT_DIG
+#define F64_DIG DBL_DIG
+#define F128_DIG LDBL_DIG
+
+#define F32_MIN_EXP FLT_MIN_EXP
+#define F64_MIN_EXP DBL_MIN_EXP
+#define F128_MIN_EXP LDBL_MIN_EXP
+
+#define F32_MIN_10_EXP FLT_MIN_10_EXP
+#define F64_MIN_10_EXP DBL_MIN_10_EXP
+#define F128_MIN_10_EXP LDBL_MIN_10_EXP
+
+#define F32_MAX_EXP FLT_MAX_EXP
+#define F64_MAX_EXP DBL_MAX_EXP
+#define F128_MAX_EXP LDBL_MAX_EXP
+
+#define F32_MAX_10_EXP FLT_MAX_10_EXP
+#define F64_MAX_10_EXP DBL_MAX_10_EXP
+#define F128_MAX_10_EXP LDBL_MAX_10_EXP
+
+#define F32_EPSILON FLT_EPSILON
+#define F64_EPSILON DBL_EPSILON
+#define F128_EPSILON LDBL_EPSILON
