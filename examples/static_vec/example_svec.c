@@ -1,5 +1,4 @@
 #include "vec.h"
-#include "wtfc.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -34,5 +33,5 @@ int main(void) {
   info_svec(a);
 
   free(a);
-  return 0;
+  return EXIT_SUCCESS;
 }

@@ -1,5 +1,4 @@
 #include "vec.h"
-#include "wtfc.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -56,5 +55,5 @@ int main(void) {
 
   vec_destroy(v2);
   vec_destroy(v1);
-  return 0;
+  return EXIT_SUCCESS;
 }
