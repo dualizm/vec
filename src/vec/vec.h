@@ -2,7 +2,7 @@
  * @file vec.h
  * @author ezeire (ognieff@yandex.ru)
  * @brief Simple vector implementation
- * @version 0.1
+ * @version 0.2
  * @date 2023-10-22
  *
  * @copyright Copyright (c) 2023 ezeire
@@ -15,43 +15,38 @@
 struct vec;
 
 /**
- * @typedef void *vec_item
+ * @typedef void * vec_item
  * @brief A generic item type used in the vector.
  */
 typedef void *vec_item;
 
 /**
- * @struct mut_vec
+ * @struct  mut_vec
  * @brief A mutable vector structure.
  */
 typedef struct vec *mut_vec;
 
 /**
- * @struct vec
+ * @struct  vec
  * @brief An immutable vector structure.
  */
 typedef struct vec const *vec;
 
 /**
- * @struct ivec_item
+ * @struct  vec_interface
  * @brief Interface for creating a vector
- * @var ivec_item::item_size The size of the item.
- * @var ivec_item::print A function pointer to print the item.
- * @var ivec_item::destroy A function pointer to destroy the item.
  */
-struct ivec_item {
-  mut_usz item_size;
-  void (*print)(vec_item item);
-  void (*destroy)(vec_item item);
-};
-
-typedef struct ivec_item const vec_interface;
+typedef struct vec_interface {
+  mut_usz item_size; /**< he size of the item. */
+  void (*destroy)(
+      vec_item item); /**< A function pointer to destroy the item. */
+} const vec_interface;
 
 /**
- * @struct _svec_mdi_
+ * @struct  svec_mdi
  * @brief Structure to hold metadata information for a vector.
  */
-struct svec_mdi {
+struct _svec_mdi {
   mut_usz length;    /**< Length of the vector. */
   mut_usz alloc;     /**< Allocated memory for the vector. */
   mut_usz type_size; /**< Size of each element in the vector. */
@@ -65,7 +60,7 @@ struct svec_mdi {
  * @param interface The interface for the vector items.
  * @return Returns a new vector.
  */
-mut_vec vec_init(struct ivec_item interface);
+mut_vec vec_init(vec_interface interface);
 
 /**
  * @brief Destroys a vector and frees its memory.
@@ -132,18 +127,26 @@ bool vec_empty(vec self);
 mut_usz vec_length(vec self);
 
 /**
- * @brief Print the elements of the vector.
+ * @brief Prints the elements of a vector.
  *
- * @param self The vector to print.
+ * This function prints the elements of a vector using the provided print
+ * function.
+ *
+ * @param self The vector to be printed.
+ * @param print The function used to print each element of the vector.
  */
-void vec_print(vec self);
+void vec_print(vec self, void (*print)(vec_item item));
 
 /**
- * @brief Print the elements of the vector followed by a newline.
+ * @brief Prints the elements of a vector with a newline at the end.
  *
- * @param self The vector to print.
+ * This function prints the elements of a vector using the provided print
+ * function, and adds a newline character at the end.
+ *
+ * @param self The vector to be printed.
+ * @param print The function used to print each element of the vector.
  */
-void vec_println(vec self);
+void vec_println(vec self, void (*print)(vec_item item));
 
 // modification functions
 
@@ -199,9 +202,8 @@ bool vec_modify(mut_vec self, usz index, void (*apply)(vec_item item));
  *
  * @param self The vector.
  * @param item The element to add.
- * @return True if the element was successfully added, false otherwise.
  */
-bool vec_push(mut_vec self, vec_item item);
+void vec_push(mut_vec self, vec_item item);
 
 /**
  * @brief Initializes an svec data structure.
@@ -211,7 +213,7 @@ bool vec_push(mut_vec self, vec_item item);
  * @param size The size of each element in the svec.
  * @return A pointer to the initialized svec data structure.
  */
-void *in_svec_init(usz size);
+void *_svec_init(usz size);
 
 /**
  * @brief Pushes a value into a dynamic array.
@@ -224,7 +226,7 @@ void *in_svec_init(usz size);
  * @param svec_ptr A pointer to the dynamic array.
  * @param value The value to be pushed into the array.
  */
-void in_svec_push(void *svec_ptr, void *value);
+void _svec_push(void *svec_ptr, void *value);
 
 /**
  * @brief Macro for initializing an svec data structure.
@@ -235,7 +237,7 @@ void in_svec_push(void *svec_ptr, void *value);
  * @param TYPE The type of each element in the svec.
  * @return A pointer to the initialized svec data structure.
  */
-#define svec_init(TYPE) in_svec_init(sizeof(TYPE))
+#define svec_init(TYPE) _svec_init(sizeof(TYPE))
 
 /**
  * @brief Pushes a value onto the vector.
@@ -245,8 +247,8 @@ void in_svec_push(void *svec_ptr, void *value);
  */
 #define svec_push(SVEC_PTR, VALUE)                                             \
   do {                                                                         \
-    void *temp_ptr = (void *)(VALUE);                                          \
-    in_svec_push((SVEC_PTR), &temp_ptr);                                       \
+    void *temp_ptr = ((void *)(VALUE));                                        \
+    _svec_push((SVEC_PTR), &temp_ptr);                                         \
   } while (0)
 
 /**
@@ -256,7 +258,7 @@ void in_svec_push(void *svec_ptr, void *value);
  */
 #define svec_pop(SVEC_PTR)                                                     \
   do {                                                                         \
-    struct svec_mdi *data = (void *)(SVEC_PTR);                                \
+    struct _svec_mdi *data = (void *)(SVEC_PTR);                               \
     if (data->length == 0) {                                                   \
       break;                                                                   \
     }                                                                          \
@@ -269,7 +271,7 @@ void in_svec_push(void *svec_ptr, void *value);
  * @param SVEC_PTR The pointer to the vector.
  * @return The length of the vector.
  */
-#define svec_length(SVEC_PTR) ((struct svec_mdi *)(void *)(SVEC_PTR))->length
+#define svec_length(SVEC_PTR) ((struct _svec_mdi *)(void *)(SVEC_PTR))->length
 
 /**
  * @brief Check if the given svec is empty.
@@ -277,7 +279,7 @@ void in_svec_push(void *svec_ptr, void *value);
  * @param SVEC_PTR Pointer to the svec structure.
  * @return true if the svec is empty, false otherwise.
  */
-#define svec_empty(SVEC_PTR) ((struct svec_mdi *)(SVEC_PTR))->length == 0
+#define svec_empty(SVEC_PTR) ((struct _svec_mdi *)(SVEC_PTR))->length == 0
 
 /**
  * @brief Returns the value at the specified index in the vector.
@@ -289,5 +291,15 @@ void in_svec_push(void *svec_ptr, void *value);
 #define svec_at(SVEC_PTR, INDEX)                                               \
   ((char *)(SVEC_PTR) +                                                        \
    sizeof(                                                                     \
-       struct svec_mdi))[(INDEX) *                                             \
-                         ((struct svec_mdi *)(void *)(SVEC_PTR))->type_size]
+       struct _svec_mdi))[(INDEX) *                                            \
+                          ((struct _svec_mdi *)(void *)(SVEC_PTR))->type_size]
+
+/**
+ * @brief Calculate the size of a svec by type.
+ *
+ * This macro calculates the size of a svec based on the provided type.
+ *
+ * @param TYPE The type of the vector elements.
+ * @return The size of the vector in bytes.
+ */
+#define svec_size_by_type(TYPE) ((usz)sizeof(TYPE) * sizeof(struct _svec_mdi))

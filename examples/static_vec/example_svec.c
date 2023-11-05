@@ -6,7 +6,7 @@ void info_svec(int *a) {
   usz len = svec_length(a);
 
   printf("svec data: ");
-  for(mut_usz i = 0; i < len; ++i) {
+  for (mut_usz i = 0; i < len; ++i) {
     printf("%d ", svec_at(a, i));
   }
   puts("");

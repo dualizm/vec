@@ -1,8 +1,9 @@
 # Vec
-Simple vector implementation
 
-* [Documentation](src/vec/vec.h)
+Simple vector implementation. Works with C99
 
-* [How to use svec](examples/static_vec/example_svec.c)
+- [Documentation](src/vec/vec.h)
 
-* [How to use vec](examples/vec/example_vec.c)
+- [How to use svec](examples/static_vec/example_svec.c)
+
+- [How to use vec](examples/vec/example_vec.c)

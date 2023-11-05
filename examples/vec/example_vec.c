@@ -1,59 +1,64 @@
 #include "vec.h"
+#include "wtfc.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 void print_i32(vec_item item) {
   mut_i32 *v = item;
 
-  printf("%" PRIi32 " ", *v); 
+  printf("%" PRIi32 " ", *v);
 }
 
-void strange_modify_i32(vec_item item) {
+void row_i32_print(vec_item item) {
   mut_i32 *v = item;
 
-  *v += 42;
+  usz len = svec_length(v);
+  for (mut_usz i = 0; i < len; ++i) {
+    printf("%" PRIi32 " ", svec_at(v, i));
+  }
+  puts("");
 }
 
-void vec_columns_plus_i32(vec_item item_a, vec_item item_b) {
-  mut_i32 *v1 = item_a;
-  mut_i32 *v2 = item_b;
+void strange_modify_row_i32(vec_item item) {
+  mut_i32 *v = item;
 
-  *v1 += *v2;
+  usz len = svec_length(v);
+  for (mut_usz i = 0; i < len; ++i) {
+    svec_at(v, i) += 42;
+  }
 }
 
-void vec_columns_sub_i32(vec_item item_a, vec_item item_b) {
-  mut_i32 *v1 = item_a;
-  mut_i32 *v2 = item_b;
+void print_matrix(vec matrix) { vec_println(matrix, row_i32_print); }
 
-  *v1 -= *v2;
-}
-
-vec_interface vec_i32_interface = {
-    .item_size = sizeof(mut_i32), .destroy = free, .print = print_i32};
+vec_interface vec_row_i32_interface = {.item_size = svec_size_by_type(mut_i32),
+                                       .destroy = free};
 
 int main(void) {
-  mut_vec v1 = vec_init(vec_i32_interface);
-  for (mut_usz i = 0; i < 8; ++i) {
-    mut_i32 *e = malloc(sizeof *e);
-    if (e) {
-      *e = rand() % 43 + 23;
-      vec_push(v1, e);
+  usz matrix_size = 18;
+  mut_vec matrix = vec_init(vec_row_i32_interface);
+  for (mut_usz i = 0; i < matrix_size; ++i) {
+
+    mut_i32 *row = svec_init(mut_i32);
+    for (mut_usz j = 0; j < matrix_size; ++j) {
+
+      mut_i32 e = rand() % 2 == 0;
+      svec_push(row, (iptr)e); // need to cast int ptr
     }
+
+    vec_push(matrix, row);
   }
 
-  puts("Vec1 :");
-  vec_println(v1);
+  puts("Matrix:");
+  print_matrix(matrix);
+  puts("Matrix modify:");
+  vec_modify(matrix, 2, strange_modify_row_i32);
+  print_matrix(matrix);
 
-  mut_vec v2 = vec_copy(v1);
-  puts("Vec2 :");
-  vec_foreach(v2, strange_modify_i32);
-  vec_println(v2);
+  puts("Matrix copy:");
+  mut_vec matrix_copy = vec_copy(matrix);
+  print_matrix(matrix);
 
-  puts("Vec sum:");
-  vec_foreach2(v1, v2, vec_columns_plus_i32);
-  vec_println(v1);
-
-  vec_destroy(v2);
-  vec_destroy(v1);
+  vec_destroy(matrix);
+  vec_destroy(matrix_copy);
   return EXIT_SUCCESS;
 }
