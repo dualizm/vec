@@ -4,6 +4,7 @@ Simple vector implementation. Works with C99
 
 - [Documentation](src/vec/vec.h)
 
-- [How to use svec](examples/static_vec/example_svec.c)
+## HOW TO USE
+- [example 1](examples/example1.c)
 
-- [How to use vec](examples/vec/example_vec.c)
+- [example 2](examples/example2.c)
